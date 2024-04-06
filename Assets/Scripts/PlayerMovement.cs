@@ -32,11 +32,13 @@ public class PlayerMovement : MonoBehaviour
     public bool readyToThrow = false; 
     public float guyJumpDelay = 1.0f; 
     public bool canThrow = true; 
+    public bool inputAllowed = true; 
 
     public List<GameObject> littleGuys = new List<GameObject>();
     public float distanceBetweenGuys = 1.0f; 
     public Vector3 spikePoint; 
     public Vector3 checkPoint; 
+    public TextScript textScript; 
 
     // Start is called before the first frame update
     void Start()
@@ -48,11 +50,15 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        LittleGuyMovement();
+        if (!inputAllowed)
+        {
+            return; 
+        }
         horizontalInput = Input.GetAxisRaw("Horizontal"); 
         Jump(); 
         Flip(); 
-        LittleGuyMovement();
+        
         
         if (Input.GetKeyDown(KeyCode.I))
         {
@@ -281,6 +287,7 @@ public class PlayerMovement : MonoBehaviour
             leverScript = collision.gameObject.GetComponentInParent<LeverScript>();
             leverScript.leverOpen = true;
         }
+
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
