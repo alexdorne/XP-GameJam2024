@@ -9,6 +9,7 @@ TagManager:
   - SpikePoint
   - CheckPoint
   - Lever
+  - Ground
   layers:
   - Default
   - TransparentFX

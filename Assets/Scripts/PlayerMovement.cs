@@ -15,7 +15,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 velocity = Vector3.zero;
     Vector3 throwDirection; 
 
-    private float horizontalInput; 
+    public float horizontalInput; 
     Rigidbody2D rb;
 
     [SerializeField] private Transform groundCheck;
@@ -26,6 +26,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private GameObject throwPath;
     [SerializeField] private TMP_Text savedText;
     [SerializeField] private TMP_Text killedText;
+    [SerializeField] private TMP_Text healthText; 
+    
+    Animator animator;
+
+    public Animator littleGuyAnimator; 
 
     [SerializeField] private int maxHealth; 
     public int currentHealth; 
@@ -41,6 +46,7 @@ public class PlayerMovement : MonoBehaviour
     public bool inputAllowed = true; 
     public bool hasThrown = false; 
     public bool hasSaved = false; 
+    public bool justThrew = false; 
 
     public List<GameObject> littleGuys = new List<GameObject>();
     public float distanceBetweenGuys = 1.0f; 
@@ -53,11 +59,32 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         currentHealth = maxHealth; 
+        animator = GetComponent<Animator>();    
     }
 
     // Update is called once per frame
     void Update()
     {
+        healthText.text = "Health: " + currentHealth; 
+        animator.SetFloat("Speed", Mathf.Abs(rb.velocity.x)); 
+        
+
+        if (!GroundCheck() && rb.velocity.y > 0)
+        {
+            animator.SetBool("isJumpingUp", true); 
+            animator.SetBool("isFalling", false); 
+        }
+        else if(!GroundCheck() && rb.velocity.y < 0)
+        {
+            animator.SetBool("isFalling", true); 
+            animator.SetBool("isJumpingUp", false); 
+        }
+        else
+        {
+            animator.SetBool("isFalling", false); 
+            animator.SetBool("isJumpingUp", false); 
+        }
+
         LittleGuyMovement();
         if (!inputAllowed)
         {
@@ -93,20 +120,50 @@ public class PlayerMovement : MonoBehaviour
                 throwDirection = (-transform.right + Vector3.up).normalized; 
 
             }
-            Vector3 startPosition = transform.position; // Assuming the player's position
-            Vector3 endPosition = startPosition + throwDirection * throwForce; // Assuming throwDirection and throwForce are accessible here
-            Debug.DrawLine(startPosition, endPosition, Color.red, 2f); // Draw a line from start to end position
+            //Vector3 startPosition = transform.position; // Assuming the player's position
+            //Vector3 endPosition = startPosition + throwDirection * throwForce; // Assuming throwDirection and throwForce are accessible here
+            //Debug.DrawLine(startPosition, endPosition, Color.red, 2f); // Draw a line from start to end position
+
+            animator.SetBool("isHolding", true); 
         }
         else
         {
             throwPath.SetActive(false);
+            animator.SetBool("isHolding", false); 
         }
 
+        if (GroundCheck())
+        {
+            animator.SetBool("isGrounded", true); 
+        }
+
+        if (littleGuyScript.recentDeath == true)
+        {
+            animator.SetBool("lilGuyDead", true); 
+            StartCoroutine(LittleGuyDeath()); 
+
+        }
+
+        if (justThrew)
+        {
+            animator.SetBool("isThrowing", true); 
+        }
+        else
+        {
+            animator.SetBool("isThrowing", false); 
+        }
         savedText.text = "Little Guys Saved: " + savedGuys;
         killedText.text = "Little Guys Brutally Murdered: " + killedGuys; 
         
+        
     }
 
+    IEnumerator LittleGuyDeath()
+    {
+        yield return new WaitForSeconds(1); 
+        littleGuyScript.recentDeath = false; 
+        animator.SetBool("lilGuyDead", false); 
+    }
     private void FixedUpdate()
     {
         rb.velocity = new Vector2(horizontalInput * movementSpeed, rb.velocity.y); //Horizontal Movement
@@ -167,23 +224,26 @@ public class PlayerMovement : MonoBehaviour
             
 
             Vector3 newPosition; 
-
+            Vector3 offset = new Vector3(0f, 0.4f, 0f); 
             
             if (guy == littleGuys[0])
             {
                 if (readyToThrow)
                 {
                     newPosition = transform.position + (transform.up * distanceBetweenGuys);
+                    littleGuyAnimator.SetBool("isHeld", true); 
                 }
                 else
                 {
                     if (isFacingRight == true)
                     {
-                        newPosition = transform.position + (-transform.right * distanceBetweenGuys * (i + 1));
+                        newPosition = transform.position + (-transform.right * distanceBetweenGuys * (i + 1) - offset);
                     }
                     else
                     {
-                        newPosition = transform.position + (transform.right * distanceBetweenGuys * (i + 1));          }
+                        newPosition = transform.position + (transform.right * distanceBetweenGuys * (i + 1) - offset);          
+                    }
+                    littleGuyAnimator.SetBool("isHeld", false); 
                 }
                 
             }
@@ -193,22 +253,22 @@ public class PlayerMovement : MonoBehaviour
                 {
                     if (isFacingRight == true)
                     {
-                        newPosition = transform.position + (-transform.right * distanceBetweenGuys * (i));
+                        newPosition = transform.position + (-transform.right * distanceBetweenGuys * (i) - offset);
                     }
                     else
                     {
-                        newPosition = transform.position + (transform.right * distanceBetweenGuys * (i)); 
+                        newPosition = transform.position + (transform.right * distanceBetweenGuys * (i) - offset); 
                     }
                 }
                 else
                 {
                     if (isFacingRight == true)
                     {
-                        newPosition = transform.position + (-transform.right * distanceBetweenGuys * (i + 1));
+                        newPosition = transform.position + (-transform.right * distanceBetweenGuys * (i + 1) - offset);
                     }
                     else
                     {
-                        newPosition = transform.position + (transform.right * distanceBetweenGuys * (i + 1));
+                        newPosition = transform.position + (transform.right * distanceBetweenGuys * (i + 1) - offset);
                     }
                 }
                 
@@ -225,6 +285,7 @@ public class PlayerMovement : MonoBehaviour
                 guy.transform.position = Vector3.SmoothDamp(guy.transform.position, newPosition, ref velocity, smoothTime);
 
             }
+            littleGuyAnimator.SetFloat("Speed", Mathf.Abs(rb.velocity.x)); 
         }
     }
 
@@ -242,6 +303,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void Throw()
     {
+        
+        justThrew = true; 
         canThrow = false; 
         if (!readyToThrow)
         {
@@ -259,6 +322,7 @@ public class PlayerMovement : MonoBehaviour
             guyRb.gravityScale = 4f; 
             guyRb.AddForce(throwDirection * throwForce, ForceMode2D.Impulse); 
             readyToThrow = false; 
+            littleGuyAnimator.SetBool("isFlying", true); 
             StartCoroutine(throwDelay()); 
 
             
@@ -276,6 +340,7 @@ public class PlayerMovement : MonoBehaviour
     IEnumerator throwDelay()
     {
         yield return new WaitForSeconds(1); 
+        justThrew = false; 
         canThrow = true; 
     }
 
@@ -284,6 +349,8 @@ public class PlayerMovement : MonoBehaviour
         if (collision.CompareTag("LittleGuy"))
         {
             littleGuyScript = collision.gameObject.GetComponent<LittleGuyScript>(); 
+            littleGuyAnimator = littleGuyScript.GetComponent<Animator>();
+            littleGuyAnimator.SetBool("isSaved", true); 
         }
         if (collision.CompareTag("LittleGuy") && littleGuyScript.canCollideWithPlayer)
         {
