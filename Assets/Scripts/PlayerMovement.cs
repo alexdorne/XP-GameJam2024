@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using TMPro;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -22,10 +23,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LittleGuyScript littleGuyScript;
     [SerializeField] private float throwForce;
     [SerializeField] private LeverScript leverScript;
-    [SerializeField] private GameObject throwPath; 
+    [SerializeField] private GameObject throwPath;
+    [SerializeField] private TMP_Text savedText;
+    [SerializeField] private TMP_Text killedText;
 
     [SerializeField] private int maxHealth; 
     public int currentHealth; 
+
+    public int savedGuys;
+    public int killedGuys; 
 
     private bool canLongJump = true; 
     public bool isFacingRight = true; 
@@ -33,6 +39,8 @@ public class PlayerMovement : MonoBehaviour
     public float guyJumpDelay = 1.0f; 
     public bool canThrow = true; 
     public bool inputAllowed = true; 
+    public bool hasThrown = false; 
+    public bool hasSaved = false; 
 
     public List<GameObject> littleGuys = new List<GameObject>();
     public float distanceBetweenGuys = 1.0f; 
@@ -93,6 +101,9 @@ public class PlayerMovement : MonoBehaviour
         {
             throwPath.SetActive(false);
         }
+
+        savedText.text = "Little Guys Saved: " + savedGuys;
+        killedText.text = "Little Guys Brutally Murdered: " + killedGuys; 
         
     }
 
@@ -252,6 +263,14 @@ public class PlayerMovement : MonoBehaviour
 
             
         }
+        if (hasThrown == false)
+        {
+            killedText.gameObject.SetActive(true);
+            hasThrown = true;
+        }
+
+        savedGuys--; 
+        killedGuys++; 
     }
 
     IEnumerator throwDelay()
@@ -272,7 +291,12 @@ public class PlayerMovement : MonoBehaviour
             collision.gameObject.transform.SetParent(null); 
             collision.gameObject.transform.SetSiblingIndex(littleGuys.Count - 1);
             littleGuyScript.canCollideWithPlayer = false;    
-            
+            if (hasSaved == false)
+            {
+                savedText.gameObject.SetActive(true);
+                hasSaved = true; 
+            }
+            savedGuys++; 
         }
         if (collision.CompareTag("SpikePoint"))
         {
