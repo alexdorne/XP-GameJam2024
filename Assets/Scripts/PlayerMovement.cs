@@ -10,7 +10,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpHeight;
     [SerializeField] private float jumpTime; 
 
-    private float smoothTime = 0.25f; 
+    private float smoothTime = 0.1f; 
     private Vector3 velocity = Vector3.zero;
 
     private float horizontalInput; 
@@ -18,20 +18,28 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask ground;
-    [SerializeField] private LittleGuyScript littleGuyScript; 
+    [SerializeField] private LittleGuyScript littleGuyScript;
+    [SerializeField] private float throwForce; 
+
+    public int maxHealth = 5; 
+    public int currentHealth; 
 
     private bool canLongJump = true; 
     public bool isFacingRight = true; 
     public bool readyToThrow = false; 
     public float guyJumpDelay = 1.0f; 
+    public bool canThrow = true; 
 
     public List<GameObject> littleGuys = new List<GameObject>();
     public float distanceBetweenGuys = 1.0f; 
+    public Vector3 spikePoint; 
+    public Vector3 checkPoint; 
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        currentHealth = maxHealth; 
     }
 
     // Update is called once per frame
@@ -40,7 +48,7 @@ public class PlayerMovement : MonoBehaviour
         horizontalInput = Input.GetAxisRaw("Horizontal"); 
         Jump(); 
         Flip(); 
-        LittleGuyMovement();
+
         
         if (Input.GetKeyDown(KeyCode.I))
         {
@@ -50,13 +58,17 @@ public class PlayerMovement : MonoBehaviour
         if (readyToThrow && Input.GetKeyDown(KeyCode.O)){
             MoveLittleGuyToBack(); 
         }
-
+        if (Input.GetKeyDown(KeyCode.P) && canThrow)
+        {
+            Throw(); 
+        }
+        
     }
 
     private void FixedUpdate()
     {
         rb.velocity = new Vector2(horizontalInput * movementSpeed, rb.velocity.y); //Horizontal Movement
-        
+        LittleGuyMovement();
     }
 
     private bool GroundCheck()
@@ -119,12 +131,11 @@ public class PlayerMovement : MonoBehaviour
                 {
                     if (isFacingRight == true)
                     {
-                        newPosition = new Vector3(transform.position.x + (-transform.right.x * distanceBetweenGuys * (i + 1)), transform.position.z , transform.position.z);
+                        newPosition = transform.position + (-transform.right * distanceBetweenGuys * (i + 1));
                     }
                     else
                     {
-                        newPosition = new Vector3(transform.position.x + (transform.right.x * distanceBetweenGuys * (i + 1)), transform.position.y, transform.position.z);
-                    }
+                        newPosition = transform.position + (transform.right * distanceBetweenGuys * (i + 1));          }
                 }
                 
             }
@@ -134,38 +145,38 @@ public class PlayerMovement : MonoBehaviour
                 {
                     if (isFacingRight == true)
                     {
-                        newPosition = new Vector3(transform.position.x + (-transform.right.x * distanceBetweenGuys * (i)), transform.position.y, transform.position.z);
+                        newPosition = transform.position + (-transform.right * distanceBetweenGuys * (i));
                     }
                     else
                     {
-                        newPosition = new Vector3(transform.position.x + (transform.right.x * distanceBetweenGuys * (i)), transform.position.y, transform.position.z);
+                        newPosition = transform.position + (transform.right * distanceBetweenGuys * (i)); 
                     }
                 }
                 else
                 {
                     if (isFacingRight == true)
                     {
-                        newPosition = new Vector3(transform.position.x + (-transform.right.x * distanceBetweenGuys * (i + 1)), transform.position.y, transform.position.z);
+                        newPosition = transform.position + (-transform.right * distanceBetweenGuys * (i + 1));
                     }
                     else
                     {
-                        newPosition = new Vector3(transform.position.x + (transform.right.x * distanceBetweenGuys * (i + 1)), transform.position.y, transform.position.z);
+                        newPosition = transform.position + (transform.right * distanceBetweenGuys * (i + 1));
                     }
                 }
                 
  
             }
-            //if (readyToThrow && guy == littleGuys[0])
-            //{
+            if (readyToThrow && guy == littleGuys[0])
+            {
                 guy.transform.position = newPosition;
 
                 
-            //}
-            //else
-            //{
-            //    guy.transform.position = Vector3.SmoothDamp(guy.transform.position, newPosition, ref velocity, smoothTime);
+            }
+            else
+            {
+                guy.transform.position = Vector3.SmoothDamp(guy.transform.position, newPosition, ref velocity, smoothTime);
 
-            //}
+            }
         }
     }
 
@@ -181,8 +192,23 @@ public class PlayerMovement : MonoBehaviour
             collision.gameObject.transform.SetParent(null); 
             collision.gameObject.transform.SetSiblingIndex(littleGuys.Count - 1);
             littleGuyScript.canCollideWithPlayer = false;    
+            
+        }
+        if (collision.CompareTag("SpikePoint"))
+        {
+            spikePoint = transform.position; 
         }
     }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Spikes"))
+        {
+            currentHealth--; 
+            transform.position = spikePoint; 
+        }
+    }
+
     public void MoveLittleGuyToBack()
     {
         if (littleGuys.Count > 0)
@@ -193,5 +219,42 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void Throw()
+    {
+        canThrow = false; 
+        if (!readyToThrow)
+        {
+            return; 
+        }
 
+        if (littleGuys.Count > 0)
+        {
+            
+            GameObject thrownLittleGuy = littleGuys[0];
+            littleGuys.RemoveAt(0); 
+            Rigidbody2D guyRb = thrownLittleGuy.GetComponent<Rigidbody2D>();    
+            Collider2D guyCollider = thrownLittleGuy.GetComponent<Collider2D>();
+            guyCollider.isTrigger = false;
+            guyRb.gravityScale = 4f; 
+            Vector3 throwDirection; 
+            if (isFacingRight)
+            {
+                throwDirection = (transform.right + Vector3.up).normalized; 
+            }
+            else
+            {
+                throwDirection = (-transform.right + Vector3.up).normalized; 
+
+            }
+            guyRb.AddForce(throwDirection * throwForce, ForceMode2D.Impulse); 
+            readyToThrow = false; 
+            StartCoroutine(throwDelay()); 
+        }
+    }
+
+    IEnumerator throwDelay()
+    {
+        yield return new WaitForSeconds(1); 
+        canThrow = true; 
+    }
 }

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8425294676145084814}
   - component: {fileID: 2895677924961421800}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Circle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -95,7 +95,8 @@ GameObject:
   - component: {fileID: 3791443438645308573}
   - component: {fileID: 2488420554414807649}
   - component: {fileID: 443367368215935128}
-  m_Layer: 0
+  - component: {fileID: 8873022833626345057}
+  m_Layer: 6
   m_Name: LittleGuy
   m_TagString: LittleGuy
   m_Icon: {fileID: 0}
@@ -166,6 +167,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canCollideWithPlayer: 1
+  isDead: 0
+--- !u!50 &8873022833626345057
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1986508802322450639}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &5820851916875462225
 GameObject:
   m_ObjectHideFlags: 0
@@ -175,7 +204,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6113951388108925471}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Graphics
   m_TagString: Untagged
   m_Icon: {fileID: 0}

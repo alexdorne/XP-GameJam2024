@@ -254,9 +254,12 @@ MonoBehaviour:
   ground:
     serializedVersion: 2
     m_Bits: 64
+  littleGuyScript: {fileID: 0}
+  throwForce: 20
   isFacingRight: 1
   readyToThrow: 0
-  canCollideWithLittleGuy: 1
+  guyJumpDelay: 1
+  canThrow: 1
   littleGuys: []
   distanceBetweenGuys: 1
 --- !u!50 &5633422413769451975
