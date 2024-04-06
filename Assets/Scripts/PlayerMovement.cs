@@ -10,8 +10,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpHeight;
     [SerializeField] private float jumpTime; 
 
-    private float smoothTime = 0.04f; 
+    private float smoothTime = 0.02f; 
     private Vector3 velocity = Vector3.zero;
+    Vector3 throwDirection; 
 
     private float horizontalInput; 
     Rigidbody2D rb;
@@ -20,7 +21,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask ground;
     [SerializeField] private LittleGuyScript littleGuyScript;
     [SerializeField] private float throwForce;
-    [SerializeField] private LeverScript leverScript; 
+    [SerializeField] private LeverScript leverScript;
+    [SerializeField] private GameObject throwPath; 
 
     [SerializeField] private int maxHealth; 
     public int currentHealth; 
@@ -63,6 +65,27 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P) && canThrow)
         {
             Throw(); 
+        }
+
+        if (readyToThrow && littleGuys.Count > 0)
+        {
+            throwPath.SetActive(true);
+            if (isFacingRight)
+            {
+                throwDirection = (transform.right + Vector3.up).normalized; 
+            }
+            else
+            {
+                throwDirection = (-transform.right + Vector3.up).normalized; 
+
+            }
+            Vector3 startPosition = transform.position; // Assuming the player's position
+            Vector3 endPosition = startPosition + throwDirection * throwForce; // Assuming throwDirection and throwForce are accessible here
+            Debug.DrawLine(startPosition, endPosition, Color.red, 2f); // Draw a line from start to end position
+        }
+        else
+        {
+            throwPath.SetActive(false);
         }
         
     }
@@ -217,19 +240,11 @@ public class PlayerMovement : MonoBehaviour
             Collider2D guyCollider = thrownLittleGuy.GetComponent<Collider2D>();
             guyCollider.isTrigger = false;
             guyRb.gravityScale = 4f; 
-            Vector3 throwDirection; 
-            if (isFacingRight)
-            {
-                throwDirection = (transform.right + Vector3.up).normalized; 
-            }
-            else
-            {
-                throwDirection = (-transform.right + Vector3.up).normalized; 
-
-            }
             guyRb.AddForce(throwDirection * throwForce, ForceMode2D.Impulse); 
             readyToThrow = false; 
             StartCoroutine(throwDelay()); 
+
+            
         }
     }
 
@@ -239,7 +254,7 @@ public class PlayerMovement : MonoBehaviour
         canThrow = true; 
     }
 
-        private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("LittleGuy"))
         {
