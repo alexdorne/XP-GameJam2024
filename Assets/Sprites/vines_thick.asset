@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: vines_thick
   m_EditorClassIdentifier: 
   m_Sprite: {fileID: 21300000, guid: 2953d5d918d751e49b59bc3f4d824c6b, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.8962264, g: 0.5478417, b: 0.28239584, a: 1}
   m_Transform:
     e00: 1
     e01: 0
