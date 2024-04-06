@@ -27,6 +27,18 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private TMP_Text savedText;
     [SerializeField] private TMP_Text killedText;
     [SerializeField] private TMP_Text healthText; 
+
+    AudioSource audioSource;
+
+    [SerializeField] private AudioClip footSteps;
+    [SerializeField] private AudioClip jumpSound1;
+    [SerializeField] private AudioClip jumpSound2;
+    [SerializeField] private AudioClip littleGuyFlying;
+    [SerializeField] private AudioClip littleGuySplat;
+    [SerializeField] private AudioClip oof;
+    [SerializeField] private AudioClip kevinLaugh;
+    [SerializeField] private AudioClip throwSound;
+    
     
     Animator animator;
 
@@ -47,6 +59,7 @@ public class PlayerMovement : MonoBehaviour
     public bool hasThrown = false; 
     public bool hasSaved = false; 
     public bool justThrew = false; 
+    public bool isPlayingFootsteps = false; 
 
     public List<GameObject> littleGuys = new List<GameObject>();
     public float distanceBetweenGuys = 1.0f; 
@@ -59,7 +72,8 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         currentHealth = maxHealth; 
-        animator = GetComponent<Animator>();    
+        animator = GetComponent<Animator>();   
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -68,6 +82,16 @@ public class PlayerMovement : MonoBehaviour
         healthText.text = "Health: " + currentHealth; 
         animator.SetFloat("Speed", Mathf.Abs(rb.velocity.x)); 
         
+        if (GroundCheck() && (rb.velocity.x > 0 || rb.velocity.x < 0) && !isPlayingFootsteps)
+        {
+            isPlayingFootsteps = true; 
+            StartCoroutine(PlayFootSteps()); 
+            Debug.Log("Robert is stupid"); 
+        }
+        else if (!GroundCheck())
+        {
+            isPlayingFootsteps = false; 
+        }
 
         if (!GroundCheck() && rb.velocity.y > 0)
         {
@@ -140,6 +164,7 @@ public class PlayerMovement : MonoBehaviour
         if (littleGuyScript.recentDeath == true)
         {
             animator.SetBool("lilGuyDead", true); 
+            
             StartCoroutine(LittleGuyDeath()); 
 
         }
@@ -156,12 +181,28 @@ public class PlayerMovement : MonoBehaviour
         killedText.text = "Little Guys Brutally Murdered: " + killedGuys; 
         
         
+        
+        
     }
 
+    IEnumerator PlayFootSteps()
+    {
+        while (GroundCheck() && (rb.velocity.x > 0 || rb.velocity.x < 0))
+        {
+            audioSource.PlayOneShot(footSteps); 
+            
+            yield return new WaitForSeconds(0.2f); 
+        }
+        
+        isPlayingFootsteps = false; 
+
+    }
     IEnumerator LittleGuyDeath()
     {
-        yield return new WaitForSeconds(1); 
         littleGuyScript.recentDeath = false; 
+        audioSource.PlayOneShot(kevinLaugh); 
+        audioSource.PlayOneShot(littleGuySplat); 
+        yield return new WaitForSeconds(1); 
         animator.SetBool("lilGuyDead", false); 
     }
     private void FixedUpdate()
@@ -185,6 +226,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Input.GetButtonDown("Jump") && GroundCheck()) //checks if on the ground to jump
         {
+            int randomIndex = Random.Range(0, 2);
+            AudioClip selectedSound = randomIndex == 0 ? jumpSound1 : jumpSound2;
+            audioSource.PlayOneShot(selectedSound);
             rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
             StartCoroutine(IsJumping()); 
             Debug.Log("Jumping"); 
@@ -323,6 +367,8 @@ public class PlayerMovement : MonoBehaviour
             guyRb.AddForce(throwDirection * throwForce, ForceMode2D.Impulse); 
             readyToThrow = false; 
             littleGuyAnimator.SetBool("isFlying", true); 
+            audioSource.PlayOneShot(littleGuyFlying); 
+            audioSource.PlayOneShot(throwSound); 
             StartCoroutine(throwDelay()); 
 
             
@@ -387,6 +433,7 @@ public class PlayerMovement : MonoBehaviour
         {
             currentHealth--; 
             transform.position = spikePoint; 
+            audioSource.PlayOneShot(oof); 
         }
 
     }
