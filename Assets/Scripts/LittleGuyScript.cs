@@ -8,6 +8,9 @@ public class LittleGuyScript : MonoBehaviour
     Rigidbody2D rb; 
     public bool isDead = false; 
 
+    [SerializeField] private LeverScript leverScript; 
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -32,5 +35,15 @@ public class LittleGuyScript : MonoBehaviour
             rb.constraints = RigidbodyConstraints2D.FreezeAll; 
         }
 
+
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Lever"))
+        {
+            leverScript = collision.gameObject.GetComponentInParent<LeverScript>();
+            leverScript.leverOpen = true;
+        }
     }
 }

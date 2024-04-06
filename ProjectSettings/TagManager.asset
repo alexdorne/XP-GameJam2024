@@ -8,6 +8,7 @@ TagManager:
   - Spikes
   - SpikePoint
   - CheckPoint
+  - Lever
   layers:
   - Default
   - TransparentFX

@@ -16,7 +16,7 @@ public class CameraMovement : MonoBehaviour
 
     }
 
-    void Update()
+    void LateUpdate()
     {
         Vector3 targetPosition = player.position + offset; 
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime); 

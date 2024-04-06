@@ -10,7 +10,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpHeight;
     [SerializeField] private float jumpTime; 
 
-    private float smoothTime = 0.05f; 
+    private float smoothTime = 0.04f; 
     private Vector3 velocity = Vector3.zero;
 
     private float horizontalInput; 
@@ -20,6 +20,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask ground;
     [SerializeField] private LittleGuyScript littleGuyScript;
     [SerializeField] private float throwForce;
+    [SerializeField] private LeverScript leverScript; 
 
     [SerializeField] private int maxHealth; 
     public int currentHealth; 
@@ -45,6 +46,7 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         horizontalInput = Input.GetAxisRaw("Horizontal"); 
         Jump(); 
         Flip(); 
@@ -258,6 +260,11 @@ public class PlayerMovement : MonoBehaviour
         if (collision.CompareTag("CheckPoint"))
         {
             checkPoint = transform.position;
+        }
+        if (collision.CompareTag("Lever"))
+        {
+            leverScript = collision.gameObject.GetComponentInParent<LeverScript>();
+            leverScript.leverOpen = true;
         }
     }
 
