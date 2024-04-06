@@ -10,7 +10,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpHeight;
     [SerializeField] private float jumpTime; 
 
-    private float smoothTime = 0.1f; 
+    private float smoothTime = 0.05f; 
     private Vector3 velocity = Vector3.zero;
 
     private float horizontalInput; 
@@ -19,9 +19,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask ground;
     [SerializeField] private LittleGuyScript littleGuyScript;
-    [SerializeField] private float throwForce; 
+    [SerializeField] private float throwForce;
 
-    public int maxHealth = 5; 
+    [SerializeField] private int maxHealth; 
     public int currentHealth; 
 
     private bool canLongJump = true; 
@@ -48,7 +48,7 @@ public class PlayerMovement : MonoBehaviour
         horizontalInput = Input.GetAxisRaw("Horizontal"); 
         Jump(); 
         Flip(); 
-
+        LittleGuyMovement();
         
         if (Input.GetKeyDown(KeyCode.I))
         {
@@ -68,7 +68,13 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         rb.velocity = new Vector2(horizontalInput * movementSpeed, rb.velocity.y); //Horizontal Movement
-        LittleGuyMovement();
+        
+
+        if (currentHealth == 0)
+        {
+            transform.position = checkPoint; 
+            currentHealth = maxHealth; 
+        }
     }
 
     private bool GroundCheck()
@@ -180,34 +186,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("LittleGuy"))
-        {
-            littleGuyScript = collision.gameObject.GetComponent<LittleGuyScript>(); 
-        }
-        if (collision.CompareTag("LittleGuy") && littleGuyScript.canCollideWithPlayer)
-        {
-            littleGuys.Add(collision.gameObject);
-            collision.gameObject.transform.SetParent(null); 
-            collision.gameObject.transform.SetSiblingIndex(littleGuys.Count - 1);
-            littleGuyScript.canCollideWithPlayer = false;    
-            
-        }
-        if (collision.CompareTag("SpikePoint"))
-        {
-            spikePoint = transform.position; 
-        }
-    }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Spikes"))
-        {
-            currentHealth--; 
-            transform.position = spikePoint; 
-        }
-    }
 
     public void MoveLittleGuyToBack()
     {
@@ -256,5 +235,39 @@ public class PlayerMovement : MonoBehaviour
     {
         yield return new WaitForSeconds(1); 
         canThrow = true; 
+    }
+
+        private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("LittleGuy"))
+        {
+            littleGuyScript = collision.gameObject.GetComponent<LittleGuyScript>(); 
+        }
+        if (collision.CompareTag("LittleGuy") && littleGuyScript.canCollideWithPlayer)
+        {
+            littleGuys.Add(collision.gameObject);
+            collision.gameObject.transform.SetParent(null); 
+            collision.gameObject.transform.SetSiblingIndex(littleGuys.Count - 1);
+            littleGuyScript.canCollideWithPlayer = false;    
+            
+        }
+        if (collision.CompareTag("SpikePoint"))
+        {
+            spikePoint = transform.position; 
+        }
+        if (collision.CompareTag("CheckPoint"))
+        {
+            checkPoint = transform.position;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Spikes"))
+        {
+            currentHealth--; 
+            transform.position = spikePoint; 
+        }
+
     }
 }

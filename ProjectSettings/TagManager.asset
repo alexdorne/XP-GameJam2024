@@ -7,6 +7,7 @@ TagManager:
   - LittleGuy
   - Spikes
   - SpikePoint
+  - CheckPoint
   layers:
   - Default
   - TransparentFX
