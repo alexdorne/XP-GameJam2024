@@ -38,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private AudioClip oof;
     [SerializeField] private AudioClip kevinLaugh;
     [SerializeField] private AudioClip throwSound;
+    [SerializeField] private AudioClip screamSound;
     
     
     Animator animator;
@@ -144,9 +145,6 @@ public class PlayerMovement : MonoBehaviour
                 throwDirection = (-transform.right + Vector3.up).normalized; 
 
             }
-            //Vector3 startPosition = transform.position; // Assuming the player's position
-            //Vector3 endPosition = startPosition + throwDirection * throwForce; // Assuming throwDirection and throwForce are accessible here
-            //Debug.DrawLine(startPosition, endPosition, Color.red, 2f); // Draw a line from start to end position
 
             animator.SetBool("isHolding", true); 
         }
@@ -191,7 +189,7 @@ public class PlayerMovement : MonoBehaviour
         {
             audioSource.PlayOneShot(footSteps); 
             
-            yield return new WaitForSeconds(0.2f); 
+            yield return new WaitForSeconds(0.3f); 
         }
         
         isPlayingFootsteps = false; 
@@ -369,6 +367,7 @@ public class PlayerMovement : MonoBehaviour
             littleGuyAnimator.SetBool("isFlying", true); 
             audioSource.PlayOneShot(littleGuyFlying); 
             audioSource.PlayOneShot(throwSound); 
+            audioSource.PlayOneShot(screamSound); 
             StartCoroutine(throwDelay()); 
 
             
@@ -418,6 +417,7 @@ public class PlayerMovement : MonoBehaviour
         if (collision.CompareTag("CheckPoint"))
         {
             checkPoint = transform.position;
+            Destroy(collision.gameObject); 
         }
         if (collision.CompareTag("Lever"))
         {

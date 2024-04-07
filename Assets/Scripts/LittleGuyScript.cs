@@ -5,7 +5,9 @@ using UnityEngine;
 public class LittleGuyScript : MonoBehaviour
 {
     public bool canCollideWithPlayer = true; 
-    Rigidbody2D rb; 
+    Rigidbody2D rb;
+
+    [SerializeField] private ParticleSystem bloodParticles; 
     public bool isDead = false; 
     public bool recentDeath = false; 
     public bool isFacingRight = true; 
@@ -21,6 +23,7 @@ public class LittleGuyScript : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+
     }
 
     // Update is called once per frame
@@ -53,10 +56,17 @@ public class LittleGuyScript : MonoBehaviour
         if (collision.gameObject.CompareTag("Spikes"))
         {
             animator.SetBool("isDead", true); 
+            bloodParticles.Play();
+  
+
+
         }
         if (collision.gameObject.CompareTag("Ground"))
         {
             animator.SetBool("isFlattened", true); 
+            bloodParticles.Play();
+
+
         }
 
     }
