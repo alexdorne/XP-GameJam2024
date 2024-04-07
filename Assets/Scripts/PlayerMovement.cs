@@ -127,7 +127,7 @@ public class PlayerMovement : MonoBehaviour
         if (readyToThrow && Input.GetKeyDown(KeyCode.O)){
             MoveLittleGuyToBack(); 
         }
-        if (Input.GetKeyDown(KeyCode.P) && canThrow)
+        if (Input.GetKeyDown(KeyCode.P) && canThrow && readyToThrow)
         {
             Throw(); 
         }
